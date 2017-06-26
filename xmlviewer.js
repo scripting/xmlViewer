@@ -1,4 +1,4 @@
-var myVersion = "0.40c", myProductName = "viewXmlServerApp", myPort = 5374;  
+var myVersion = "0.40d", myProductName = "viewXmlServerApp", myPort = 5374;  
 const utils = require ("daveutils");
 const request = require ("request");
 const http = require ("http"); 
@@ -51,28 +51,6 @@ function startup () {
 								break;
 							case "/now":
 								doHttpReturn (200, "text/plain", new Date ().toString ());
-								break;
-							case "/build":
-								try {
-									var blogName = parsedUrl.query.blog, blogConfig = config.blogs [blogName];
-									getBlogJsontext (blogConfig, function (jsontext) {
-										try {
-											var jstruct = JSON.parse (jsontext);
-											blogConfig.lastSocketJsontext = undefined; //consume it
-											blogConfig.jstruct = jstruct; //5/15/17 by DW
-											publishBlog (jstruct, blogConfig, function () {
-												doHttpReturn (200, "text/plain", blogConfig.baseUrl);
-												});
-											}
-										catch (err) {
-											blogConfig.lastSocketJsontext = undefined;
-											doHttpReturn (503, "text/plain", err.message);
-											}
-										});
-									}
-								catch (err) {
-									doHttpReturn (503, "text/plain", err.message);
-									}
 								break;
 							default: 
 								doHttpReturn (404, "text/plain", "Not found.");
