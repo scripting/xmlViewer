@@ -1,4 +1,4 @@
-var myVersion = "0.40d", myProductName = "viewXmlServerApp", myPort = 5374;  
+var myVersion = "0.40e", myProductName = "viewXmlServerApp", myPort = 5374;  
 const utils = require ("daveutils");
 const request = require ("request");
 const http = require ("http"); 
@@ -14,6 +14,26 @@ function startup () {
 				httpResponse.writeHead (code, {"Content-Type": type});
 				httpResponse.end (s);    
 				}
+			function doRequest (xmlUrl) {
+				var options = { 
+					url: xmlUrl,
+					jar: true,
+					gzip: true, //6/25/17 by DW
+					maxRedirects: 5,
+					headers: {
+						"User-Agent": myProductName + " v" + myVersion
+						}
+					};
+				console.log ("doRequest: xmlUrl == " + xmlUrl);
+				request (options, function (error, response, data) {
+					if (!error && (response.statusCode == 200)) {
+						doHttpReturn (200, "text/html", xmlNeuter (data));
+						}
+					else {
+						doHttpReturn (response.statusCode, "text/plain", error.message);
+						}
+					});
+				}
 			try {
 				var parsedUrl = urlpack.parse (httpRequest.url, true), now = new Date ();
 				var lowerpath = parsedUrl.pathname.toLowerCase ();
@@ -24,27 +44,7 @@ function startup () {
 					case "GET":
 						switch (lowerpath) {
 							case "/":
-								var xmlUrl = decodeURI (parsedUrl.query.url);
-								console.log ("httpServer: xmlUrl == " + xmlUrl);
-								
-								var options = { //6/26/17 by DW
-									url: xmlUrl,
-									jar: true,
-									gzip: true, //6/25/17 by DW
-									maxRedirects: 5,
-									headers: {
-										"User-Agent": myProductName + " v" + myVersion
-										}
-									};
-								
-								request (options, function (error, response, data) {
-									if (!error && (response.statusCode == 200)) {
-										doHttpReturn (200, "text/html", xmlNeuter (data));
-										}
-									else {
-										doHttpReturn (response.statusCode, "text/plain", error.message);
-										}
-									});
+								doRequest (decodeURI (parsedUrl.query.url));
 								break;
 							case "/version":
 								doHttpReturn (200, "text/plain", myVersion);
