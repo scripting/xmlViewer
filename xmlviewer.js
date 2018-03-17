@@ -1,8 +1,11 @@
-var myVersion = "0.40e", myProductName = "viewXmlServerApp", myPort = 5374;  
+var myVersion = "0.5.0", myProductName = "viewXmlServerApp", myPort = 5374;  
 const utils = require ("daveutils");
 const request = require ("request");
 const http = require ("http"); 
 const urlpack = require ("url");
+const fs = require ("fs");
+
+const fnameTemplate = "template.html";
 
 function startup () {
 	function xmlNeuter (xmltext) {
@@ -27,7 +30,20 @@ function startup () {
 				console.log ("doRequest: xmlUrl == " + xmlUrl);
 				request (options, function (error, response, data) {
 					if (!error && (response.statusCode == 200)) {
-						doHttpReturn (200, "text/html", xmlNeuter (data));
+						fs.readFile (fnameTemplate, function (err, templateText) {
+							if (err) {
+								console.log ("doRequest: err.message == " + err.message);
+								}
+							else {
+								console.log ("doRequest: templateText.length == " + templateText.length);
+								var pagetable = {
+									url: xmlUrl,
+									bodytext: xmlNeuter (data.toString ())
+									};
+								var pagetext = utils.multipleReplaceAll (templateText.toString (), pagetable, false, "[%", "%]");
+								doHttpReturn (200, "text/html", pagetext);
+								}
+							});
 						}
 					else {
 						doHttpReturn (response.statusCode, "text/plain", error.message);
@@ -44,7 +60,12 @@ function startup () {
 					case "GET":
 						switch (lowerpath) {
 							case "/":
-								doRequest (decodeURI (parsedUrl.query.url));
+								if (parsedUrl.query.url === undefined) {
+									doHttpReturn (400, "text/plain", "Can't process the request because there is no \"url\" parameter supplied.");
+									}
+								else {
+									doRequest (decodeURI (parsedUrl.query.url));
+									}
 								break;
 							case "/version":
 								doHttpReturn (200, "text/plain", myVersion);
