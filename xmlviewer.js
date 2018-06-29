@@ -1,4 +1,4 @@
-var myVersion = "0.5.0", myProductName = "viewXmlServerApp", myPort = 5374;  
+var myVersion = "0.5.7", myProductName = "viewXmlServerApp", myPort = 5374;  
 const utils = require ("daveutils");
 const request = require ("request");
 const http = require ("http"); 
@@ -6,10 +6,35 @@ const urlpack = require ("url");
 const fs = require ("fs");
 
 const fnameTemplate = "template.html";
+const urlTemplate = "http://fargo.io/code/shared/viewxmlserverapp/template.html";
 
+function httpReadUrl (url, callback) {
+	var options = { 
+		url: url,
+		jar: true,
+		gzip: true, //6/25/17 by DW
+		maxRedirects: 5,
+		headers: {
+			"User-Agent": myProductName + " v" + myVersion
+			}
+		};
+	request (options, function (err, response, data) {
+		if (!err && (response.statusCode == 200)) {
+			callback (undefined, data.toString ());
+			}
+		else {
+			if (!err) {
+				err = {
+					message: "Can't read the file because there was an error. Code == " + response.statusCode + "."
+					}
+				}
+			callback (err);
+			}
+		});
+	}
 function startup () {
 	function xmlNeuter (xmltext) {
-		return ("<html><body><h4 style=\"display: none\">Thanks Google for making this necessary just to view the source of an RSS feed.</h4><pre>" + utils.encodeXml (xmltext) + "</pre></body></html>");
+		return (utils.encodeXml (xmltext));
 		}
 	function startHttpServer () {
 		function httpServer (httpRequest, httpResponse) {
@@ -18,24 +43,16 @@ function startup () {
 				httpResponse.end (s);    
 				}
 			function doRequest (xmlUrl) {
-				var options = { 
-					url: xmlUrl,
-					jar: true,
-					gzip: true, //6/25/17 by DW
-					maxRedirects: 5,
-					headers: {
-						"User-Agent": myProductName + " v" + myVersion
+				httpReadUrl (xmlUrl, function (err, data) {
+					if (err) {
+						doHttpReturn (500, "text/plain", err.message);
 						}
-					};
-				console.log ("doRequest: xmlUrl == " + xmlUrl);
-				request (options, function (error, response, data) {
-					if (!error && (response.statusCode == 200)) {
-						fs.readFile (fnameTemplate, function (err, templateText) {
+					else {
+						httpReadUrl (urlTemplate, function (err, templateText) {
 							if (err) {
 								console.log ("doRequest: err.message == " + err.message);
 								}
 							else {
-								console.log ("doRequest: templateText.length == " + templateText.length);
 								var pagetable = {
 									url: xmlUrl,
 									bodytext: xmlNeuter (data.toString ())
@@ -44,9 +61,6 @@ function startup () {
 								doHttpReturn (200, "text/html", pagetext);
 								}
 							});
-						}
-					else {
-						doHttpReturn (response.statusCode, "text/plain", error.message);
 						}
 					});
 				}

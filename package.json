@@ -1,6 +1,6 @@
 {
 	"name": "viewXmlServerApp",
-	"version": "0.5.0",
+	"version": "0.5.6",
 	"main": "xmlviewer.js",
 	"dependencies" : {
 		"request": "*",
