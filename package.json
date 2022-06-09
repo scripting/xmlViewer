@@ -1,9 +1,0 @@
-{
-	"name": "viewXmlServerApp",
-	"version": "0.5.6",
-	"main": "xmlviewer.js",
-	"dependencies" : {
-		"request": "*",
-		"daveutils": "*"
-		}
-	}

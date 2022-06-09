@@ -1,0 +1,40 @@
+body {
+	font-family: Ubuntu;
+	font-size: 18px;
+	background-color: whitesmoke;
+	}
+.divPageBody {
+	width: 80%;
+	margin-left: auto;
+	margin-right: auto;
+	margin-top: 20px;
+	margin-bottom: 500px;
+	}
+p {
+	margin-bottom: 20px;
+	}
+.divEditorContainer { 
+	}
+.divEditor { 
+	width: 1000px;
+	margin-left: auto;
+	margin-right: auto;
+	height: 400px;
+	max-height: 1200px;
+	border: 1px solid silver;
+	}
+.ace_gutter-layer {
+	/* https://github.com/ajaxorg/ace/issues/1104 */
+	/* original width is 48px */
+	width: 32px !important;
+	}
+.ace_gutter-layer > * {
+	/* 48 - 32 = 16 */
+	margin-left: -16px;
+	}
+.divUrl {
+	margin-bottom: 10px;
+	}
+.spWhatIsThis {
+	font-size: 16px;
+	}
