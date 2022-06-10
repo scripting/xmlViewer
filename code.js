@@ -1,71 +1,14 @@
-var appConsts = {
-	version: "0.4.0" 
-	}
+const productName = "xmlViewer", version = "0.6.0"; 
+
 
 var theEditor;  //ace-editor object
-var editorSerialnum = 0;
-var idCurrentEditor = undefined;
-var whenLastUserAction = new Date ();
-var savedEditorStatus = {
-	};
-var flEditorChanged = false;
 
-function editorChanged () {
-	flEditorChanged = true;
-	whenLastUserAction = new Date ();
-	}
-function getText () {
-	var s = theEditor.getValue ();
-	s = replaceAll (s, "\r", "\n"); //so source listings are readable in Chrome
-	return (s);
-	}
+
 function setText (s) {
 	if (s === undefined) {
 		s = "";
 		}
 	theEditor.setValue (s);
-	}
-function saveEditorStatus () {
-	savedEditorStatus.text = getText ();
-	savedEditorStatus.selectionRange = theEditor.getSelectionRange ();
-	savedEditorStatus.folds = theEditor.session.getAllFolds ().map (function (fold) {
-		return {
-			start       : fold.start,
-			end         : fold.end,
-			placeholder : fold.placeholder
-			};
-		});
-	localStorage.savedEditorStatus = jsonStringify (savedEditorStatus);
-	
-	if (savedEditorStatus.ctUpdates === undefined) {
-		savedEditorStatus.ctUpdates = 1;
-		}
-	else {
-		savedEditorStatus.ctUpdates++
-		}
-	
-	console.log ("saveEditorStatus: localStorage.savedEditorStatus == " + localStorage.savedEditorStatus);
-	}
-function restoreEditorStatus () {
-	if (savedEditorStatus.selectionRange !== undefined) {
-		theEditor.getSelection ().setSelectionRange (savedEditorStatus.selectionRange);
-		}
-	if (savedEditorStatus.folds !== undefined) {
-		var Range = ace.require ("ace/range").Range;
-		try {
-			savedEditorStatus.folds.forEach (function (fold) {
-				theEditor.session.addFold (fold.placeholder, Range.fromPoints (fold.start, fold.end));
-				});
-			} 
-		catch (err) {
-			}
-		}
-	if (savedEditorStatus.urlMockupPage !== undefined) {
-		updateMockupPageDisplay (savedEditorStatus.urlMockupPage);
-		}
-	if (savedEditorStatus.text !== undefined) {
-		setText (savedEditorStatus.text);
-		}
 	}
 function startEditor (textToDisplay) {
 	theEditor = ace.edit ("idEditor");
@@ -88,36 +31,21 @@ function startEditor (textToDisplay) {
 	setText (textToDisplay); //6/9/22 by DW
 	theEditor.clearSelection (); //6/9/22 by DW
 	
-	session.on ("changeFold", function (e) {
-		editorChanged ();
-		});
-	session.selection.on ("changeSelection", function (e) {
-		editorChanged ();
-		});
-	session.on ("changeAnnotation", function () {
-		var annotations = session.getAnnotations()||[], i = len = annotations.length;
-		while (i--) {
-			if(/doctype first\. Expected/.test(annotations[i].text)) {
-				annotations.splice(i, 1);
-				}
+	}
+function showEditor () {
+	$("#idUrl").css ("visibility", "visible");
+	$("#idEditorContainer").css ("display", "table-cell");
+	}
+function readHttp (url, callback) {
+	readHttpFileThruProxy (url, undefined, function (feedtext) {
+		if (feedtext !== undefined) {
+			startEditor (feedtext);
+			showEditor ();
+			callback (feedtext)
 			}
-		if(len>annotations.length) {
-			session.setAnnotations(annotations);
-			}
-		});
-	theEditor.on ("change", function () {
-		editorChanged ();
 		});
 	}
-function showEditor (flDisplay) {
-	var val;
-	if (flDisplay) {
-		val = "table-cell";
-		}
-	else {
-		val = "none";
-		}
-	$("#idEditorContainer").css ("display", val);
+function everyMinute () {
 	}
 function everySecond () {
 	}
@@ -139,12 +67,13 @@ function startup () {
 		feedUrl = urlparam;
 		}
 	$("#idUrl").text (feedUrl);
-	readHttpFileThruProxy (feedUrl, undefined, function (feedtext) {
-		console.log ("startup: readHttpFileThruProxy took " + secondsSince (whenstart) + " secs.");
+	readHttp (feedUrl, function (feedtext) {
+		console.log ("startup: readHttp took " + secondsSince (whenstart) + " secs.");
 		if (feedtext !== undefined) {
 			startEditor (feedtext);
-			showEditor (true);
+			showEditor ();
 			}
 		});
 	hitCounter ();
+	runEveryMinute (everyMinute);
 	}

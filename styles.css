@@ -32,6 +32,7 @@ p {
 	margin-left: -16px;
 	}
 .divUrl {
+	visibility: hidden;
 	margin-bottom: 10px;
 	}
 .spWhatIsThis {
