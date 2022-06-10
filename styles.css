@@ -4,7 +4,7 @@ body {
 	background-color: whitesmoke;
 	}
 .divPageBody {
-	width: 80%;
+	width: 90%;
 	margin-left: auto;
 	margin-right: auto;
 	margin-top: 20px;
@@ -20,7 +20,6 @@ p {
 	margin-left: auto;
 	margin-right: auto;
 	height: 400px;
-	max-height: 1200px;
 	border: 1px solid silver;
 	}
 .ace_gutter-layer {

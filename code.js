@@ -122,6 +122,7 @@ function showEditor (flDisplay) {
 function everySecond () {
 	}
 function startup () {
+	const whenstart = new Date ();
 	function getUrlParam (name) { 
 		var val = getURLParameter (name);
 		if (val == "null") {
@@ -139,6 +140,7 @@ function startup () {
 		}
 	$("#idUrl").text (feedUrl);
 	readHttpFileThruProxy (feedUrl, undefined, function (feedtext) {
+		console.log ("startup: readHttpFileThruProxy took " + secondsSince (whenstart) + " secs.");
 		if (feedtext !== undefined) {
 			startEditor (feedtext);
 			showEditor (true);
